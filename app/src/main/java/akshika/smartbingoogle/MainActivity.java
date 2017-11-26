@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        postNewComment(this);
+        //postNewComment(this,"sample");
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
        //  queue = Volley.newRequestQueue(this);
         // url ="http://www.google.com";
@@ -137,14 +137,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static void postNewComment(Context context){
+    public static void postNewComment(Context context,String s){
         try {
+
+
+
+
             RequestQueue requestQueue = Volley.newRequestQueue(context);
             //String URL = "https://lkn1u1svr0.execute-api.eu-west-1.amazonaws.com/prod/composition";
             String URL = "https://posttestserver.com/post.php";
             JSONObject jsonBody = new JSONObject();
             jsonBody.put("Title", "Android Volley Demo");
-            jsonBody.put("Author", "BNK");
+            jsonBody.put("Author", s);
            // String sample_payload={"body":"{\"BinId\": 1,\"items\": {\"Phone\":2}}"};
             final String requestBody = jsonBody.toString();
 
@@ -347,7 +351,39 @@ public class MainActivity extends AppCompatActivity {
                     annotateRequest.setDisableGZipContent(true);
                     Log.d(TAG, "created Cloud Vision request object, sending request");
 
+                    String garbage;
                     BatchAnnotateImagesResponse response = annotateRequest.execute();
+                    for(int i=0;i<10;i++)
+                    {
+                        String s = response.getResponses().get(0).getLabelAnnotations().get(i).getDescription();
+
+                        switch(s)
+                        {
+                            case "laptop" :
+                                postNewComment(getBaseContext(),response.toString());
+                                return "laptop";
+
+                            case "mouse" :
+                                postNewComment(getBaseContext(),response.toString());
+                                return "mouse";
+
+                            case "microphone" :
+                                postNewComment(getBaseContext(),response.toString());
+                                return "microphone";
+
+
+                        }
+                    }
+
+
+                    System.out.println(response.getResponses().get(0).getLabelAnnotations().get(0).getDescription());
+
+
+
+
+
+
+                    postNewComment(getBaseContext(),response.toString());
                     return convertResponseToString(response);
 
                 } catch (GoogleJsonResponseException e) {
