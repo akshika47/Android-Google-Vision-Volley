@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String FILE_NAME = "temp.jpg";
     private static final String ANDROID_CERT_HEADER = "X-Android-Cert";
     private static final String ANDROID_PACKAGE_HEADER = "X-Android-Package";
+    private static final int NUMBER_OF_ITEMS = 4;
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int GALLERY_PERMISSIONS_REQUEST = 0;
@@ -95,9 +96,20 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView mImageDetails;
     private ImageView mMainImage;
+    public static String uploadString;
     RequestQueue queue;
     // Instantiate the RequestQueue.
     String url= "https://lkn1u1svr0.execute-api.eu-west-1.amazonaws.com/prod/composition";
+/*
+
+                           0 "laptop" :
+                           1 "mouse" :
+                           2 "microphone" :
+                           3  "camera" :
+
+ */
+    public static int items[];
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,11 +117,28 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //postNewComment(this,"sample");
+        uploadString = "Initialized";
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-       //  queue = Volley.newRequestQueue(this);
-        // url ="http://www.google.com";
-       // sendTheData();
+        FloatingActionButton sendToServer = (FloatingActionButton) findViewById(R.id.sendtoserver);
+
+
+        items = new int[NUMBER_OF_ITEMS];
+
+
+        sendToServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                try {
+                    postNewComment(getBaseContext(),getStringToSend());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -136,9 +165,53 @@ public class MainActivity extends AppCompatActivity {
         mMainImage = (ImageView) findViewById(R.id.main_image);
     }
 
+    public static String getStringToSend() throws JSONException {
+        String returnString = "";
+        JSONObject finalJSONObj = new JSONObject();
+        JSONObject jsonObj = new JSONObject();
+        JSONObject itemJSON = new JSONObject();
+
+        jsonObj.put("BinId","1");
+
+        for (int i=0;i<items.length;i++)
+        {/*
+
+                           0 "laptop" :
+                           1 "mouse" :
+                           2 "microphone" :
+                           3  "camera" :
+
+ */
+            switch (i){
+                case 0:
+                    itemJSON.put("laptop",Integer.toString(items[i]));
+                break;
+
+                case 1:
+                    itemJSON.put("mouse",Integer.toString(items[i]));
+                    break;
+
+                case 2:
+                    itemJSON.put("microphone",Integer.toString(items[i]));
+                    break;
+
+                case 3:
+                    itemJSON.put("camera",Integer.toString(items[i]));
+                    break;
+
+            }
+
+        }
+
+        jsonObj.put("Items",itemJSON);
+        finalJSONObj.put("Body",jsonObj);
+
+        return finalJSONObj.toString();
+
+    }
 
     public static void postNewComment(Context context,String s){
-        try {
+
 
 
 
@@ -146,12 +219,18 @@ public class MainActivity extends AppCompatActivity {
             RequestQueue requestQueue = Volley.newRequestQueue(context);
             //String URL = "https://lkn1u1svr0.execute-api.eu-west-1.amazonaws.com/prod/composition";
             String URL = "https://posttestserver.com/post.php";
-            JSONObject jsonBody = new JSONObject();
-            jsonBody.put("Title", "Android Volley Demo");
-            jsonBody.put("Author", s);
-           // String sample_payload={"body":"{\"BinId\": 1,\"items\": {\"Phone\":2}}"};
-            final String requestBody = jsonBody.toString();
+            //JSONObject jsonBody = new JSONObject();
+            //jsonBody.put("body", "Android Volley Demo");
+            //jsonBody.put("Author", s);
 
+
+
+
+           // String sample_payload={"body":"
+            // {\"BinId\": 1,
+            //  \"items\":
+            // {\"Phone\":2}}"};
+            final String requestBody = s;
             StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
@@ -191,10 +270,8 @@ public class MainActivity extends AppCompatActivity {
             };
 
             requestQueue.add(stringRequest);
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
-    }
+
 
 
 
@@ -360,17 +437,28 @@ public class MainActivity extends AppCompatActivity {
                         switch(s)
                         {
                             case "laptop" :
-                                postNewComment(getBaseContext(),response.toString());
+                                //postNewComment(getBaseContext(),response.toString());
+                                items[0]++;
                                 return "laptop";
 
                             case "mouse" :
-                                postNewComment(getBaseContext(),response.toString());
+                                //postNewComment(getBaseContext(),response.toString());
+                                items[1]++;
                                 return "mouse";
 
                             case "microphone" :
-                                postNewComment(getBaseContext(),response.toString());
+                               // postNewComment(getBaseContext(),response.toString());
+                                items[2]++;
                                 return "microphone";
 
+
+                            case "camera" :
+                                //postNewComment(getBaseContext(),response.toString());
+                                items[3]++;
+                                return "camera";
+
+                            default:
+                                return "Please Scan an electronic item, this is not in our database";
 
                         }
                     }

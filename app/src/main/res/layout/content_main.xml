@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Use the floating action button to select an image."/>
+                android:text="Use the floating action button on the right to select an image."/>
 
             <ImageView
                 android:id="@+id/main_image"
