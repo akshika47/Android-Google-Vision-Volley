@@ -46,6 +46,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView mMainImage;
     public static String uploadString;
     RequestQueue queue;
+    public JSONObject jsonfinalobj;
     // Instantiate the RequestQueue.
     String url= "https://lkn1u1svr0.execute-api.eu-west-1.amazonaws.com/prod/composition";
 /*
@@ -165,13 +167,13 @@ public class MainActivity extends AppCompatActivity {
         mMainImage = (ImageView) findViewById(R.id.main_image);
     }
 
-    public static String getStringToSend() throws JSONException {
+    public static JSONObject getStringToSend() throws JSONException {
         String returnString = "";
         JSONObject finalJSONObj = new JSONObject();
         JSONObject jsonObj = new JSONObject();
         JSONObject itemJSON = new JSONObject();
 
-        jsonObj.put("BinId","1");
+        jsonObj.put("BinId",1);
 
         for (int i=0;i<items.length;i++)
         {/*
@@ -184,93 +186,58 @@ public class MainActivity extends AppCompatActivity {
  */
             switch (i){
                 case 0:
-                    itemJSON.put("laptop",Integer.toString(items[i]));
+                    itemJSON.put("Laptop",items[i]);
                 break;
 
                 case 1:
-                    itemJSON.put("mouse",Integer.toString(items[i]));
+                    itemJSON.put("Mouse",items[i]);
                     break;
 
                 case 2:
-                    itemJSON.put("microphone",Integer.toString(items[i]));
+                    itemJSON.put("Microphone",items[i]);
                     break;
 
                 case 3:
-                    itemJSON.put("camera",Integer.toString(items[i]));
+                    itemJSON.put("Camera",items[i]);
                     break;
 
             }
 
         }
 
-        jsonObj.put("Items",itemJSON);
-        finalJSONObj.put("Body",jsonObj);
-
-        return finalJSONObj.toString();
+        jsonObj.put("items",itemJSON);
+        finalJSONObj.put("body",jsonObj);
+        Log.i("Volley",finalJSONObj.toString());
+        return finalJSONObj;
 
     }
 
-    public static void postNewComment(Context context,String s){
+    public static void  postNewComment(Context context,JSONObject s) {
 
 
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        String URL = "https://lkn1u1svr0.execute-api.eu-west-1.amazonaws.com/prod/composition";
 
 
+        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.POST, URL, s, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                // jsonfinalobj  =response;
 
-            RequestQueue requestQueue = Volley.newRequestQueue(context);
-            //String URL = "https://lkn1u1svr0.execute-api.eu-west-1.amazonaws.com/prod/composition";
-            String URL = "https://posttestserver.com/post.php";
-            //JSONObject jsonBody = new JSONObject();
-            //jsonBody.put("body", "Android Volley Demo");
-            //jsonBody.put("Author", s);
+                Log.i("Volley",response.toString());
+            }
 
-
-
-
-           // String sample_payload={"body":"
-            // {\"BinId\": 1,
-            //  \"items\":
-            // {\"Phone\":2}}"};
-            final String requestBody = s;
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    Log.i("VOLLEY ", response);
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.e("VOLLEY", error.toString());
-                }
-            }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
-
-                @Override
-                public byte[] getBody() throws AuthFailureError {
-                    try {
-                        return requestBody == null ? null : requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                        return null;
-                    }
-                }
-
-                @Override
-                protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                    String responseString = "";
-                    if (response != null) {
-                        responseString = String.valueOf(response.statusCode);
-
-                        // can get more details such as response.headers
-                    }
-                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-                }
-            };
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("VOLLEY", error.toString());
+            }
+        });
+        {
 
             requestQueue.add(stringRequest);
         }
+    }
 
 
 
@@ -428,8 +395,9 @@ public class MainActivity extends AppCompatActivity {
                     annotateRequest.setDisableGZipContent(true);
                     Log.d(TAG, "created Cloud Vision request object, sending request");
 
-                    String garbage;
+
                     BatchAnnotateImagesResponse response = annotateRequest.execute();
+                    System.out.println(response.getResponses());
                     for(int i=0;i<10;i++)
                     {
                         String s = response.getResponses().get(0).getLabelAnnotations().get(i).getDescription();
@@ -471,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                    postNewComment(getBaseContext(),response.toString());
+                    //postNewComment(getBaseContext(),response);
                     return convertResponseToString(response);
 
                 } catch (GoogleJsonResponseException e) {
